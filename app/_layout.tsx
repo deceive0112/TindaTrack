@@ -1,11 +1,12 @@
-import React, { Component } from 'react'
+import { Stack } from 'expo-router'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 
-export class _layout extends Component {
-  render() {
-    return (
-      <div>_layout</div>
-    )
-  }
+export default function RootLayout() {
+  return (
+    <SafeAreaProvider>
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      </Stack>
+    </SafeAreaProvider>
+  )
 }
-
-export default _layout
