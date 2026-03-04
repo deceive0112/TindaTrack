@@ -1,14 +1,25 @@
-import { View, Text } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { ScrollView, Text, View } from "react-native";
+import SalesChart from "@/components/dashboard/SalesChart";
+import LowStockCard from "@/components/dashboard/LowStockCard";
+import QuickStats from "@/components/dashboard/QuickStats";
 
-export default function Dashboard() {
+export default function DashboardScreen() {
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#0f172a' }}>
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ color: 'white', fontSize: 24, fontWeight: 'bold' }}>
-          Dashboard
-        </Text>
+    <ScrollView className="flex-1 bg-gray-100 px-4 py-4">
+      <Text className="text-2xl font-bold text-gray-800 mb-4">TindaTrack</Text>
+
+      {/* Quick Stats */}
+      <QuickStats />
+
+      {/* Sales Chart */}
+      <View className="mt-4">
+        <SalesChart />
       </View>
-    </SafeAreaView>
-  )
+
+      {/* Low Stock Warning */}
+      <View className="mt-4">
+        <LowStockCard />
+      </View>
+    </ScrollView>
+  );
 }
