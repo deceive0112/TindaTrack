@@ -1,8 +1,10 @@
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
+import { useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 const schema = z.object({
   name: z.string().min(1, "Product name is required"),
@@ -14,19 +16,42 @@ type FormData = z.infer<typeof schema>;
 
 export default function AddProductModal() {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
 
-  const onSubmit = (data: FormData) => {
-    console.log("New Product:", data);
-    // TODO: Insert into Supabase
-    router.back();
+  const onSubmit = async (data: FormData) => {
+    setLoading(true);
+    setError(null);
+
+    const { error } = await supabase.from("products").insert({
+      name: data.name,
+      price: parseFloat(data.price),
+      stock: parseInt(data.stock),
+    });
+
+    if (error) {
+      setError("Failed to save product. Please try again.");
+      console.error(error);
+    } else {
+      router.back();
+    }
+
+    setLoading(false);
   };
 
   return (
     <View className="flex-1 bg-gray-100 px-4 py-6 gap-4">
       <Text className="text-xl font-bold text-gray-800">Add New Product</Text>
+
+      {error && (
+        <View className="bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+          <Text className="text-red-500 text-sm">{error}</Text>
+        </View>
+      )}
 
       {/* Name */}
       <View>
@@ -43,7 +68,9 @@ export default function AddProductModal() {
             />
           )}
         />
-        {errors.name && <Text className="text-red-500 text-xs mt-1">{errors.name.message}</Text>}
+        {errors.name?.message && (
+          <Text className="text-red-500 text-xs mt-1">{errors.name.message}</Text>
+        )}
       </View>
 
       {/* Price */}
@@ -62,7 +89,9 @@ export default function AddProductModal() {
             />
           )}
         />
-        {errors.price && <Text className="text-red-500 text-xs mt-1">{errors.price.message}</Text>}
+        {errors.price?.message && (
+          <Text className="text-red-500 text-xs mt-1">{errors.price.message}</Text>
+        )}
       </View>
 
       {/* Stock */}
@@ -81,14 +110,21 @@ export default function AddProductModal() {
             />
           )}
         />
-        {errors.stock && <Text className="text-red-500 text-xs mt-1">{errors.stock.message}</Text>}
+        {errors.stock?.message && (
+          <Text className="text-red-500 text-xs mt-1">{errors.stock.message}</Text>
+        )}
       </View>
 
       <TouchableOpacity
         onPress={handleSubmit(onSubmit)}
+        disabled={loading}
         className="bg-green-600 rounded-xl py-4 items-center mt-2"
       >
-        <Text className="text-white font-bold text-base">Save Product</Text>
+        {loading ? (
+          <ActivityIndicator color="white" />
+        ) : (
+          <Text className="text-white font-bold text-base">Save Product</Text>
+        )}
       </TouchableOpacity>
     </View>
   );

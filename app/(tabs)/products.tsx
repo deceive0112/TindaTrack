@@ -1,28 +1,55 @@
-import { View, Text, FlatList, TouchableOpacity } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
 import { Plus } from "lucide-react-native";
+import { useEffect, useState, useCallback } from "react";
+import { useFocusEffect } from "expo-router";
+import { supabase } from "@/lib/supabase";
+import { Product } from "@/types";
 import ProductCard from "@/components/inventory/ProductCard";
-
-// Placeholder data — replace with Supabase query
-const mockProducts = [
-  { id: "1", name: "Product A", price: 50, stock: 20 },
-  { id: "2", name: "Product B", price: 30, stock: 3 },
-];
 
 export default function ProductsScreen() {
   const router = useRouter();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchProducts = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) console.error("Error fetching products:", error);
+    else setProducts(data ?? []);
+    setLoading(false);
+  };
+
+  // Refetch every time screen is focused (e.g. after adding a product)
+  useFocusEffect(
+    useCallback(() => {
+      fetchProducts();
+    }, [])
+  );
 
   return (
     <View className="flex-1 bg-gray-100">
-      <FlatList
-        data={mockProducts}
-        keyExtractor={(item) => item.id}
-        contentContainerClassName="px-4 py-4 gap-3"
-        renderItem={({ item }) => <ProductCard product={item} />}
-        ListEmptyComponent={
-          <Text className="text-center text-gray-400 mt-10">No products yet.</Text>
-        }
-      />
+      {loading ? (
+        <ActivityIndicator size="large" color="#16a34a" className="mt-10" />
+      ) : (
+        <FlatList
+          data={products}
+          keyExtractor={(item) => item.id}
+          contentContainerClassName="px-4 py-4 gap-3"
+          renderItem={({ item }) => (
+            <ProductCard product={item} onStockUpdate={fetchProducts} />
+          )}
+          ListEmptyComponent={
+            <Text className="text-center text-gray-400 mt-10">
+              No products yet. Tap + to add one!
+            </Text>
+          }
+        />
+      )}
 
       {/* FAB - Add Product */}
       <TouchableOpacity

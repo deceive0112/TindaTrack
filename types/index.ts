@@ -7,26 +7,17 @@ export type Product = {
   created_at?: string;
 };
 
-export type SaleItem = {
-  id: string;
-  product_id: string;
-  product_name: string;
-  qty: number;
-  price: number;
-  total: number;
-};
+export type EntryType = "product_sale" | "undeclared_sale" | "expense";
 
-export type Sale = {
-  id: string;
-  items: SaleItem[];
-  grand_total: number;
-  created_at: string;
-};
+export type ExpenseCategory = "necessities" | "bills" | "other";
 
-export type Expense = {
+export type Entry = {
   id: string;
-  label: string;
+  name: string;
   amount: number;
-  type: "expense" | "revenue";
+  type: EntryType;
+  category?: ExpenseCategory; // only for expenses
+  product_id?: string;        // only for product_sale
+  qty?: number;               // only for product_sale
   created_at: string;
 };
