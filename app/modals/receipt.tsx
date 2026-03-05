@@ -62,7 +62,7 @@ export default function ReceiptModal() {
         ${items.map((e) => `
           <div class="row">
             <span class="item-name">${e.name}</span>
-            <span class="${isExpense ? "red" : ""}">${isExpense ? "-" : ""}P${e.amount.toFixed(2)}</span>
+            <span>${isExpense ? "-" : ""}P${e.amount.toFixed(2)}</span>
           </div>
         `).join("")}
         <div class="line-dashed"></div>
@@ -76,73 +76,73 @@ export default function ReceiptModal() {
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body {
               font-family: 'Courier New', Courier, monospace;
-              font-size: 11px;
-              width: 280px;
-              margin: 0 auto;
-              padding: 16px 12px;
+              font-size: 26px;
+              width: 100%;
+              max-width: 100%;
+              padding: 24px 32px;
               color: #000;
             }
             h1 {
               text-align: center;
-              font-size: 16px;
+              font-size: 44px;
               font-weight: bold;
-              letter-spacing: 3px;
+              letter-spacing: 4px;
               margin-bottom: 2px;
             }
             .subtitle {
               text-align: center;
-              font-size: 10px;
+              font-size: 24px;
               margin-bottom: 2px;
             }
             .date {
               text-align: center;
-              font-size: 10px;
-              margin-bottom: 8px;
+              font-size: 24px;
+              margin-bottom: 10px;
             }
-            .line { border-top: 1px solid #000; margin: 6px 0; }
+            .line { border-top: 1px solid #000; margin: 8px 0; }
             .line-dashed { border-top: 1px dashed #000; margin: 6px 0; }
             .section-title {
-              font-size: 10px;
+              font-size: 22px;
               font-weight: bold;
               text-transform: uppercase;
-              margin: 6px 0 3px 0;
+              margin: 8px 0 4px 0;
+              letter-spacing: 1px;
             }
             .row {
               display: flex;
               justify-content: space-between;
-              padding: 1px 0;
-              font-size: 11px;
+              padding: 2px 0;
+              font-size: 26px;
             }
             .item-name {
               flex: 1;
-              padding-right: 8px;
+              padding-right: 16px;
               word-break: break-word;
             }
-            .red { color: #000; }
             .summary-row {
               display: flex;
               justify-content: space-between;
-              padding: 2px 0;
-              font-size: 11px;
+              padding: 3px 0;
+              font-size: 26px;
             }
             .net-row {
               display: flex;
               justify-content: space-between;
-              padding: 3px 0;
-              font-size: 13px;
+              padding: 4px 0;
+              font-size: 30px;
               font-weight: bold;
             }
             .footer {
               text-align: center;
-              font-size: 10px;
-              margin-top: 12px;
+              font-size: 22px;
+              margin-top: 16px;
               letter-spacing: 1px;
             }
             .thank-you {
               text-align: center;
-              font-size: 11px;
+              font-size: 24px;
               font-weight: bold;
-              margin-top: 6px;
+              margin-top: 8px;
               letter-spacing: 2px;
             }
           </style>
