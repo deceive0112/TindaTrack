@@ -1,42 +1,393 @@
-import { ScrollView, Text, View, TouchableOpacity } from "react-native";
-import { useState } from "react";
+import { ScrollView, Text, View, TouchableOpacity, ActivityIndicator, RefreshControl } from "react-native";
+import { useState, useCallback } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { supabase } from "@/lib/supabase";
+import { format, startOfDay, endOfDay, startOfMonth, endOfMonth, subDays, subMonths, addMonths, isSameMonth } from "date-fns";
 
-const FILTERS = ["Weekly", "Monthly"];
-
-// Placeholder chart data — replace with Supabase query + date-fns
-const mockData = {
-  Weekly: [10, 40, 30, 80, 60, 90, 50],
-  Monthly: [300, 500, 400, 700, 600, 800, 750, 900, 650, 700, 500, 850],
+type PeriodData = {
+  label: string;
+  fullDate: string;
+  income: number;
+  expense: number;
+  net: number;
+  isFuture: boolean;
 };
 
+type Bill = {
+  id: string;
+  name: string;
+  amount: number;
+  is_paid: boolean;
+  month: number;
+  year: number;
+};
+
+const BAR_WIDTH = 28;
+const MAX_HEIGHT = 100;
+const FILTERS = ["Weekly", "Monthly"] as const;
+type Filter = typeof FILTERS[number];
+
 export default function ReportsScreen() {
-  const [filter, setFilter] = useState<"Weekly" | "Monthly">("Weekly");
+  const router = useRouter();
+  const [filter, setFilter] = useState<Filter>("Weekly");
+  const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [chartData, setChartData] = useState<PeriodData[]>([]);
+  const [bills, setBills] = useState<Bill[]>([]);
+  const [monthlyNet, setMonthlyNet] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const isCurrentMonth = isSameMonth(selectedMonth, new Date());
+  const isPastMonth = selectedMonth < startOfMonth(new Date());
+
+  const fetchData = async () => {
+    setLoading(true);
+    await Promise.all([fetchChartData(), fetchBills(), fetchMonthlyNet()]);
+    setLoading(false);
+  };
+
+  const fetchChartData = async () => {
+    const now = new Date();
+    const monthStart = startOfMonth(selectedMonth);
+    const monthEnd = endOfMonth(selectedMonth);
+    const today = isCurrentMonth ? now : monthEnd;
+
+    if (filter === "Weekly") {
+      const pastDays = Array.from({ length: 7 }, (_, i) => subDays(today, 6 - i))
+        .filter((d) => d >= monthStart);
+
+      const allDays = [...pastDays];
+      let next = new Date(today);
+      while (allDays.length < 7 && isCurrentMonth) {
+        next = new Date(next);
+        next.setDate(next.getDate() + 1);
+        if (next <= monthEnd) allDays.push(new Date(next));
+        else break;
+      }
+
+      const results = await Promise.all(
+        allDays.map(async (day) => {
+          const isFuture = isCurrentMonth && day > now;
+          if (isFuture) {
+            return { label: format(day, "EEE"), fullDate: format(day, "MMM d"), income: 0, expense: 0, net: 0, isFuture: true };
+          }
+
+          const { data } = await supabase
+            .from("entries")
+            .select("amount, type")
+            .gte("created_at", startOfDay(day).toISOString())
+            .lte("created_at", endOfDay(day).toISOString());
+
+          const income = (data ?? []).filter((e) => e.type !== "expense").reduce((sum, e) => sum + e.amount, 0);
+          const expense = (data ?? []).filter((e) => e.type === "expense").reduce((sum, e) => sum + e.amount, 0);
+          return { label: format(day, "EEE"), fullDate: format(day, "MMM d"), income, expense, net: income - expense, isFuture: false };
+        })
+      );
+      setChartData(results);
+
+    } else {
+      const results = await Promise.all(
+        Array.from({ length: 4 }, async (_, weekIndex) => {
+          const weekStartDay = weekIndex * 7 + 1;
+          const weekEndDay = Math.min((weekIndex + 1) * 7, monthEnd.getDate());
+          const weekStart = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), weekStartDay);
+          const weekEnd = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), weekEndDay);
+          const isFuture = isCurrentMonth && weekStart > now;
+
+          if (isFuture) {
+            return { label: `Week ${weekIndex + 1}`, fullDate: `${format(weekStart, "MMM d")} - ${format(weekEnd, "MMM d")}`, income: 0, expense: 0, net: 0, isFuture: true };
+          }
+
+          const { data } = await supabase
+            .from("entries")
+            .select("amount, type")
+            .gte("created_at", startOfDay(weekStart).toISOString())
+            .lte("created_at", endOfDay(weekEnd).toISOString());
+
+          const income = (data ?? []).filter((e) => e.type !== "expense").reduce((sum, e) => sum + e.amount, 0);
+          const expense = (data ?? []).filter((e) => e.type === "expense").reduce((sum, e) => sum + e.amount, 0);
+          return { label: `Week ${weekIndex + 1}`, fullDate: `${format(weekStart, "MMM d")} - ${format(weekEnd, "MMM d")}`, income, expense, net: income - expense, isFuture: false };
+        })
+      );
+      setChartData(results);
+    }
+  };
+
+  const fetchMonthlyNet = async () => {
+    const { data } = await supabase
+      .from("entries")
+      .select("amount, type")
+      .gte("created_at", startOfMonth(selectedMonth).toISOString())
+      .lte("created_at", endOfMonth(selectedMonth).toISOString());
+
+    const income = (data ?? []).filter((e) => e.type !== "expense").reduce((sum, e) => sum + e.amount, 0);
+    const expense = (data ?? []).filter((e) => e.type === "expense").reduce((sum, e) => sum + e.amount, 0);
+    setMonthlyNet(income - expense);
+  };
+
+  const fetchBills = async () => {
+    const { data, error } = await supabase
+      .from("bills")
+      .select("*")
+      .eq("month", selectedMonth.getMonth() + 1)
+      .eq("year", selectedMonth.getFullYear())
+      .order("created_at", { ascending: true });
+
+    if (error) console.error("Error fetching bills:", error);
+    else setBills(data ?? []);
+  };
+
+  const togglePaid = async (bill: Bill) => {
+    if (isPastMonth) return; // read only for past months
+    const { error } = await supabase
+      .from("bills")
+      .update({ is_paid: !bill.is_paid })
+      .eq("id", bill.id);
+    if (!error) fetchBills();
+  };
+
+  const deleteBill = async (id: string) => {
+    if (isPastMonth) return; // read only for past months
+    const { error } = await supabase.from("bills").delete().eq("id", id);
+    if (!error) fetchBills();
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchData();
+    }, [selectedMonth, filter])
+  );
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchData();
+    setRefreshing(false);
+  };
+
+  const maxIncome = Math.max(...chartData.map((d) => d.income), 1);
+  const totalBills = bills.reduce((sum, b) => sum + b.amount, 0);
+  const remaining = monthlyNet - totalBills;
+  const totalPaid = bills.filter((b) => b.is_paid).reduce((sum, b) => sum + b.amount, 0);
 
   return (
-    <ScrollView className="flex-1 bg-gray-100 px-4 py-4">
-      <Text className="text-2xl font-bold text-gray-800 mb-4">Reports</Text>
+    <ScrollView
+      className="flex-1 bg-gray-100 px-4 py-4"
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#16a34a"]} />}
+    >
+      {/* Header */}
+      <Text className="text-2xl font-bold text-gray-800 mb-3">Reports</Text>
+
+      {/* Month Selector */}
+      <View className="flex-row items-center justify-between bg-white rounded-2xl px-4 py-3 shadow mb-4">
+        <TouchableOpacity
+          onPress={() => setSelectedMonth((m) => subMonths(m, 1))}
+          className="p-2"
+        >
+          <Text className="text-green-600 font-bold text-lg">‹</Text>
+        </TouchableOpacity>
+
+        <View className="items-center">
+          <Text className="text-base font-bold text-gray-800">
+            {format(selectedMonth, "MMMM yyyy")}
+          </Text>
+          {isPastMonth && (
+            <Text className="text-xs text-gray-400">Archive — Read Only</Text>
+          )}
+          {isCurrentMonth && (
+            <Text className="text-xs text-green-500">Current Month</Text>
+          )}
+        </View>
+
+        <TouchableOpacity
+          onPress={() => {
+            const next = addMonths(selectedMonth, 1);
+            if (next <= new Date()) setSelectedMonth(next);
+          }}
+          className="p-2"
+        >
+          <Text className={`font-bold text-lg ${isSameMonth(selectedMonth, new Date()) ? "text-gray-300" : "text-green-600"}`}>
+            ›
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Filter Toggle */}
       <View className="flex-row gap-2 mb-4">
         {FILTERS.map((f) => (
           <TouchableOpacity
             key={f}
-            onPress={() => setFilter(f as "Weekly" | "Monthly")}
-            className={`px-4 py-2 rounded-full ${
-              filter === f ? "bg-green-600" : "bg-white border border-gray-300"
-            }`}
+            onPress={() => setFilter(f)}
+            className={`flex-1 py-2 rounded-xl items-center border ${filter === f ? "bg-green-600 border-green-600" : "bg-white border-gray-200"}`}
           >
-            <Text className={filter === f ? "text-white font-semibold" : "text-gray-600"}>
-              {f}
-            </Text>
+            {filter === f ? (
+              <Text className="text-white font-semibold text-sm">{f}</Text>
+            ) : (
+              <Text className="text-gray-600 text-sm">{f}</Text>
+            )}
           </TouchableOpacity>
         ))}
       </View>
 
-      {/* Chart Placeholder — replace with Victory Native chart */}
-      <View className="bg-white rounded-2xl p-4 shadow items-center justify-center h-48">
-        <Text className="text-gray-400">{filter} Chart goes here</Text>
-      </View>
+      {loading ? (
+        <ActivityIndicator color="#16a34a" className="mt-10" />
+      ) : (
+        <>
+          {/* Chart */}
+          <View className="bg-white rounded-2xl p-4 shadow mb-4">
+            <Text className="text-base font-bold text-gray-800 mb-4">
+              {filter} Income — {format(selectedMonth, "MMMM yyyy")}
+            </Text>
+            <View className="flex-row items-end justify-around" style={{ height: MAX_HEIGHT + 50 }}>
+              {chartData.map((item, i) => {
+                const barHeight = Math.max((item.income / maxIncome) * MAX_HEIGHT, 4);
+                return (
+                  <View key={i} className="items-center" style={{ width: BAR_WIDTH }}>
+                    <Text style={{ fontSize: 7 }} className="text-gray-500 mb-1" numberOfLines={1}>
+                      {item.income > 0 ? `₱${item.income}` : ""}
+                    </Text>
+                    <View
+                      style={{ height: item.isFuture ? 4 : barHeight, width: BAR_WIDTH - 6, borderRadius: 4 }}
+                      className={item.isFuture ? "bg-gray-200" : "bg-green-500"}
+                    />
+                    <Text style={{ fontSize: 7 }} className={`mt-1 text-center ${item.isFuture ? "text-gray-300" : "text-gray-400"}`}>
+                      {item.label}
+                    </Text>
+                  </View>
+                );
+              })}
+            </View>
+          </View>
+
+          {/* Summary */}
+          <View className="bg-white rounded-2xl p-4 shadow mb-4">
+            <Text className="text-base font-bold text-gray-800 mb-3">
+              {filter} Summary
+            </Text>
+            {filter === "Weekly" ? (
+              chartData.map((item, i) => (
+                <View key={i} className="flex-row justify-between py-2 border-b border-gray-50">
+                  <Text className={`text-sm ${item.isFuture ? "text-gray-300" : "text-gray-600"}`}>
+                    {item.fullDate}
+                  </Text>
+                  {item.isFuture ? (
+                    <Text className="text-sm text-gray-300">—</Text>
+                  ) : item.net >= 0 ? (
+                    <Text className="text-sm font-semibold text-green-600">₱{item.net}</Text>
+                  ) : (
+                    <Text className="text-sm font-semibold text-red-500">-₱{Math.abs(item.net)}</Text>
+                  )}
+                </View>
+              ))
+            ) : (
+              chartData.map((item, i) => (
+                <View key={i} className="flex-row justify-between py-2 border-b border-gray-50">
+                  <View>
+                    <Text className={`text-sm ${item.isFuture ? "text-gray-300" : "text-gray-600"}`}>
+                      {item.label}
+                    </Text>
+                    <Text className="text-xs text-gray-300">{item.fullDate}</Text>
+                  </View>
+                  {item.isFuture ? (
+                    <Text className="text-sm text-gray-300">—</Text>
+                  ) : item.net >= 0 ? (
+                    <Text className="text-sm font-semibold text-green-600">₱{item.net}</Text>
+                  ) : (
+                    <Text className="text-sm font-semibold text-red-500">-₱{Math.abs(item.net)}</Text>
+                  )}
+                </View>
+              ))
+            )}
+            <View className="flex-row justify-between pt-3">
+              <Text className="text-base font-bold text-gray-800">
+                {filter} Net Total
+              </Text>
+              {chartData.reduce((sum, d) => sum + d.net, 0) >= 0 ? (
+                <Text className="text-base font-bold text-green-600">
+                  ₱{chartData.reduce((sum, d) => sum + d.net, 0)}
+                </Text>
+              ) : (
+                <Text className="text-base font-bold text-red-500">
+                  -₱{Math.abs(chartData.reduce((sum, d) => sum + d.net, 0))}
+                </Text>
+              )}
+            </View>
+          </View>
+
+          {/* Monthly Bills */}
+          <View className="bg-white rounded-2xl p-4 shadow mb-10">
+            <View className="flex-row justify-between items-center mb-3">
+              <Text className="text-base font-bold text-gray-800">Monthly Bills</Text>
+              {isCurrentMonth && (
+                <TouchableOpacity
+                  onPress={() => router.push("/modals/add-bill")}
+                  className="bg-green-600 rounded-xl px-3 py-1"
+                >
+                  <Text className="text-white text-xs font-semibold">+ Add Bill</Text>
+                </TouchableOpacity>
+              )}
+              {isPastMonth && (
+                <Text className="text-xs text-gray-400">Read Only</Text>
+              )}
+            </View>
+
+            {bills.length === 0 ? (
+              <Text className="text-gray-400 text-sm text-center py-4">
+                No bills for {format(selectedMonth, "MMMM yyyy")}.
+              </Text>
+            ) : (
+              bills.map((bill) => (
+                <View key={bill.id} className="flex-row justify-between items-center py-2 border-b border-gray-50">
+                  <TouchableOpacity
+                    onPress={() => togglePaid(bill)}
+                    className="flex-row items-center gap-2 flex-1"
+                    disabled={isPastMonth}
+                  >
+                    <View className={`w-5 h-5 rounded-full border-2 items-center justify-center ${bill.is_paid ? "bg-green-500 border-green-500" : "border-gray-300"}`}>
+                      {bill.is_paid && <Text className="text-white text-xs">✓</Text>}
+                    </View>
+                    <View>
+                      <Text className={`text-sm font-semibold ${bill.is_paid ? "text-gray-400 line-through" : "text-gray-800"}`}>
+                        {bill.name}
+                      </Text>
+                      <Text className="text-xs text-gray-400">₱{bill.amount}</Text>
+                    </View>
+                  </TouchableOpacity>
+                  {!isPastMonth && (
+                    <TouchableOpacity onPress={() => deleteBill(bill.id)}>
+                      <Text className="text-red-400 text-xs">✕</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              ))
+            )}
+
+            {bills.length > 0 && (
+              <View className="mt-3 pt-3 border-t border-gray-100">
+                <View className="flex-row justify-between mb-1">
+                  <Text className="text-xs text-gray-400">Total Bills</Text>
+                  <Text className="text-xs text-red-500 font-semibold">-₱{totalBills}</Text>
+                </View>
+                <View className="flex-row justify-between mb-1">
+                  <Text className="text-xs text-gray-400">Paid</Text>
+                  <Text className="text-xs text-green-600 font-semibold">₱{totalPaid}</Text>
+                </View>
+                <View className="flex-row justify-between mb-3">
+                  <Text className="text-xs text-gray-400">Monthly Net</Text>
+                  <Text className="text-xs text-gray-600 font-semibold">₱{monthlyNet}</Text>
+                </View>
+                <View className="flex-row justify-between pt-2 border-t border-gray-100">
+                  <Text className="text-base font-bold text-gray-800">Remaining</Text>
+                  {remaining >= 0 ? (
+                    <Text className="text-base font-bold text-green-600">₱{remaining}</Text>
+                  ) : (
+                    <Text className="text-base font-bold text-red-500">-₱{Math.abs(remaining)}</Text>
+                  )}
+                </View>
+              </View>
+            )}
+          </View>
+        </>
+      )}
     </ScrollView>
   );
 }

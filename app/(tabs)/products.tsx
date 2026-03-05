@@ -1,7 +1,7 @@
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
 import { Plus } from "lucide-react-native";
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useFocusEffect } from "expo-router";
 import { supabase } from "@/lib/supabase";
 import { Product } from "@/types";
@@ -24,11 +24,20 @@ export default function ProductsScreen() {
     setLoading(false);
   };
 
-  // Refetch every time screen is focused (e.g. after adding a product)
   useFocusEffect(
     useCallback(() => {
       fetchProducts();
     }, [])
+  );
+
+  const AddButton = () => (
+    <TouchableOpacity
+      onPress={() => router.push("/modals/add-product")}
+      className="mt-3 bg-green-600 rounded-2xl py-4 flex-row items-center justify-center gap-2"
+    >
+      <Plus size={20} color="white" />
+      <Text className="text-white font-bold text-base">Add Product</Text>
+    </TouchableOpacity>
   );
 
   return (
@@ -43,21 +52,14 @@ export default function ProductsScreen() {
           renderItem={({ item }) => (
             <ProductCard product={item} onStockUpdate={fetchProducts} />
           )}
+          ListFooterComponent={<AddButton />}
           ListEmptyComponent={
             <Text className="text-center text-gray-400 mt-10">
-              No products yet. Tap + to add one!
+              No products yet. Add your first one!
             </Text>
           }
         />
       )}
-
-      {/* FAB - Add Product */}
-      <TouchableOpacity
-        onPress={() => router.push("/modals/add-product")}
-        className="absolute bottom-6 right-6 bg-green-600 rounded-full p-4 shadow-lg"
-      >
-        <Plus size={24} color="white" />
-      </TouchableOpacity>
     </View>
   );
 }

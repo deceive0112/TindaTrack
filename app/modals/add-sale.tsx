@@ -116,7 +116,7 @@ export default function AddSaleModal() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-gray-100 px-4 py-6">
+    <ScrollView className="flex-1 bg-gray-100 px-4 py-6" contentContainerStyle={{ paddingBottom: 80 }}>
       <Text className="text-xl font-bold text-gray-800 mb-4">Add Entry</Text>
 
       {error && (

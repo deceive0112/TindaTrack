@@ -48,23 +48,23 @@ export default function QuantityControl({ productId, stock, onStockUpdate }: Pro
   };
 
   return (
-    <View className="flex-row items-center gap-3">
+    <View className="flex-row items-center gap-2">
       <TouchableOpacity
         onPress={() => requestChange(-1)}
         disabled={loading || qty === 0}
-        className="bg-red-100 rounded-full p-2"
+        className="bg-red-100 rounded-full p-3.5"
       >
         <Minus size={16} color="#dc2626" />
       </TouchableOpacity>
 
-      <Text className="text-base font-bold text-gray-800 w-6 text-center">
+      <Text className="text-xl font-bold text-gray-800 w-9 text-center">
         {qty}
       </Text>
 
       <TouchableOpacity
         onPress={() => requestChange(1)}
         disabled={loading}
-        className="bg-green-100 rounded-full p-2"
+        className="bg-green-100 rounded-full p-3.5"
       >
         <Plus size={16} color="#16a34a" />
       </TouchableOpacity>

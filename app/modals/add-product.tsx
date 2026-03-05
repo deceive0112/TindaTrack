@@ -62,7 +62,7 @@ export default function AddProductModal() {
           render={({ field: { onChange, value } }) => (
             <TextInput
               className="bg-white rounded-xl px-4 py-3 text-gray-800 shadow"
-              placeholder="e.g. Shampoo"
+              placeholder="e.g. Interior"
               onChangeText={onChange}
               value={value}
             />

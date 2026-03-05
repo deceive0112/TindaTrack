@@ -17,28 +17,32 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: "Dashboard",
-          tabBarIcon: ({ color }) => <Home size={22} color={color} />,
+          headerTitleStyle: { fontWeight: "bold", fontSize: 25 },
+          tabBarIcon: ({ color }) => <Home size={25} color={color} />,
         }}
       />
       <Tabs.Screen
         name="products"
         options={{
           title: "Inventory",
-          tabBarIcon: ({ color }) => <Package size={22} color={color} />,
+          headerTitleStyle: { fontWeight: "bold", fontSize: 25 },
+          tabBarIcon: ({ color }) => <Package size={25} color={color} />,
         }}
       />
       <Tabs.Screen
         name="sales"
         options={{
           title: "Sales",
-          tabBarIcon: ({ color }) => <ShoppingCart size={22} color={color} />,
+          headerTitleStyle: { fontWeight: "bold", fontSize: 25 },
+          tabBarIcon: ({ color }) => <ShoppingCart size={25} color={color} />,
         }}
       />
       <Tabs.Screen
         name="reports"
         options={{
           title: "Reports",
-          tabBarIcon: ({ color }) => <BarChart2 size={22} color={color} />,
+          headerTitleStyle: { fontWeight: "bold", fontSize: 25 },
+          tabBarIcon: ({ color }) => <BarChart2 size={25} color={color} />,
         }}
       />
     </Tabs>

@@ -24,7 +24,6 @@ export default function SalesScreen() {
   const fetchEntries = async () => {
     setLoading(true);
 
-    // Get today's date range
     const start = new Date();
     start.setHours(0, 0, 0, 0);
     const end = new Date();
@@ -49,7 +48,6 @@ export default function SalesScreen() {
   );
 
   const handleDelete = async (entry: Entry) => {
-    // If product sale, restore stock first
     if (entry.type === "product_sale" && entry.product_id && entry.qty) {
       const { data: product } = await supabase
         .from("products")
@@ -92,15 +90,26 @@ export default function SalesScreen() {
 
   const netTotal = totalIncome - totalExpense;
 
+  const AddButton = () => (
+    <TouchableOpacity
+      onPress={() => router.push("/modals/add-sale")}
+      className="mt-3 bg-green-600 rounded-2xl py-4 flex-row items-center justify-center gap-2"
+    >
+      <Plus size={20} color="white" />
+      <Text className="text-white font-bold text-lg">Add Entry</Text>
+    </TouchableOpacity>
+  );
+
   return (
     <View className="flex-1 bg-gray-100">
       {/* Date Header */}
       <View className="px-4 pt-4 pb-2">
-        <Text className="text-base font-bold text-gray-800">
+        <Text className="text-xl font-bold text-gray-800">
           {format(new Date(), "EEEE, MMMM d, yyyy")}
         </Text>
-        <Text className="text-xs text-gray-400">Today's entries only</Text>
+        <Text className="text-base text-gray-400">Today's entries only</Text>
       </View>
+
       {loading ? (
         <ActivityIndicator size="large" color="#16a34a" className="mt-10" />
       ) : (
@@ -110,11 +119,11 @@ export default function SalesScreen() {
           contentContainerClassName="px-4 py-4 gap-2"
           renderSectionHeader={({ section }) => (
             section.sign === 1 ? (
-              <Text className="text-xs font-bold uppercase tracking-widest mt-4 mb-1 text-green-600">
+              <Text className="text-base font-bold uppercase tracking-widest mt-4 mb-1 text-green-600">
                 {section.title}
               </Text>
             ) : (
-              <Text className="text-xs font-bold uppercase tracking-widest mt-4 mb-1 text-red-500">
+              <Text className="text-base font-bold uppercase tracking-widest mt-4 mb-1 text-red-500">
                 {section.title}
               </Text>
             )
@@ -127,47 +136,46 @@ export default function SalesScreen() {
             />
           )}
           ListEmptyComponent={
-            <Text className="text-center text-gray-400 mt-10">
-              No entries yet. Tap + to add one!
-            </Text>
+            <View className="gap-3">
+              <Text className="text-center text-gray-400 mt-10">
+                No entries yet. Add your first one!
+              </Text>
+              <AddButton />
+            </View>
           }
           ListFooterComponent={
             entries.length > 0 ? (
-              <View className="mt-6 p-4 bg-white rounded-2xl shadow">
-                <View className="flex-row justify-between mb-1">
-                  <Text className="text-sm text-gray-500">Total Income</Text>
-                  <Text className="text-sm text-green-600 font-semibold">₱{totalIncome}</Text>
+              <View>
+                <AddButton />
+                <View className="mt-3 p-4 bg-white rounded-2xl shadow">
+                  <View className="flex-row justify-between mb-1">
+                    <Text className="text-base text-gray-500">Total Income</Text>
+                    <Text className="text-base text-green-600 font-semibold">₱{totalIncome}</Text>
+                  </View>
+                  <View className="flex-row justify-between mb-3">
+                    <Text className="text-base text-gray-500">Total Expenses</Text>
+                    <Text className="text-base text-red-500 font-semibold">-₱{totalExpense}</Text>
+                  </View>
+                  <View className="flex-row justify-between border-t border-gray-100 pt-3">
+                    <Text className="text-xl font-bold text-gray-800">Net Total</Text>
+                    {netTotal >= 0 ? (
+                      <Text className="text-lg font-bold text-green-600">₱{netTotal}</Text>
+                    ) : (
+                      <Text className="text-lg font-bold text-red-500">-₱{Math.abs(netTotal)}</Text>
+                    )}
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => router.push("/modals/receipt")}
+                    className="mt-4 bg-green-600 rounded-xl py-3 items-center"
+                  >
+                    <Text className="text-white font-semibold text-lg">View Receipt</Text>
+                  </TouchableOpacity>
                 </View>
-                <View className="flex-row justify-between mb-3">
-                  <Text className="text-sm text-gray-500">Total Expenses</Text>
-                  <Text className="text-sm text-red-500 font-semibold">-₱{totalExpense}</Text>
-                </View>
-                <View className="flex-row justify-between border-t border-gray-100 pt-3">
-                  <Text className="text-base font-bold text-gray-800">Net Total</Text>
-                  {netTotal >= 0 ? (
-                    <Text className="text-base font-bold text-green-600">₱{netTotal}</Text>
-                  ) : (
-                    <Text className="text-base font-bold text-red-500">-₱{Math.abs(netTotal)}</Text>
-                  )}
-                </View>
-                <TouchableOpacity
-                  onPress={() => router.push("/modals/receipt")}
-                  className="mt-4 bg-green-600 rounded-xl py-3 items-center"
-                >
-                  <Text className="text-white font-semibold">View Receipt</Text>
-                </TouchableOpacity>
               </View>
             ) : null
           }
         />
       )}
-
-      <TouchableOpacity
-        onPress={() => router.push("/modals/add-sale")}
-        className="absolute bottom-6 right-6 bg-green-600 rounded-full p-4 shadow-lg"
-      >
-        <Plus size={24} color="white" />
-      </TouchableOpacity>
     </View>
   );
 }

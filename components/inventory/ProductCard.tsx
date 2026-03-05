@@ -11,14 +11,14 @@ export default function ProductCard({ product, onStockUpdate }: Props) {
   return (
     <View className="bg-white rounded-2xl p-4 shadow flex-row justify-between items-center">
       <View className="flex-1">
-        <Text className="text-base font-bold text-gray-800">{product.name}</Text>
-        <Text className="text-sm text-gray-500">₱{product.price}</Text>
-        {product.stock <= 5 ? (
-          <Text className="text-xs mt-1 text-red-500">
+        <Text className="text-xl font-bold text-gray-800">{product.name}</Text>
+        <Text className="text-lg text-gray-500">₱{product.price}</Text>
+        {product.stock <= 3 ? (
+          <Text className="text-base mt-1 text-red-500">
             Stock: {product.stock} — Low!
           </Text>
         ) : (
-          <Text className="text-xs mt-1 text-gray-400">
+          <Text className="text-base mt-1 text-gray-400">
             Stock: {product.stock}
           </Text>
         )}
