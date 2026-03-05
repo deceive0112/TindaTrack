@@ -174,8 +174,6 @@ export default function ReportsScreen() {
       className="flex-1 bg-gray-100 px-4 py-4"
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#16a34a"]} />}
     >
-      {/* Header */}
-      <Text className="text-2xl font-bold text-gray-800 mb-3">Reports</Text>
 
       {/* Month Selector */}
       <View className="flex-row items-center justify-between bg-white rounded-2xl px-4 py-3 shadow mb-4">
