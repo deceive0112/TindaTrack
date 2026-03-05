@@ -6,7 +6,7 @@ import { useFocusEffect } from "expo-router";
 import { supabase } from "@/lib/supabase";
 import { Entry } from "@/types";
 import SaleItem from "@/components/sales/SaleItem";
-import { format } from "date-fns";
+import { format, subDays, addDays, isSameDay, startOfYear } from "date-fns";
 
 const SECTION_CONFIG = [
   { title: "Product Sales", filter: (e: Entry) => e.type === "product_sale", sign: 1 },
@@ -20,13 +20,19 @@ export default function SalesScreen() {
   const router = useRouter();
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
-  const fetchEntries = async () => {
+  const today = new Date();
+  const isToday = isSameDay(selectedDate, today);
+  const isPast = selectedDate < today && !isToday;
+  const yearStart = startOfYear(today);
+
+  const fetchEntries = async (date: Date) => {
     setLoading(true);
 
-    const start = new Date();
+    const start = new Date(date);
     start.setHours(0, 0, 0, 0);
-    const end = new Date();
+    const end = new Date(date);
     end.setHours(23, 59, 59, 999);
 
     const { data, error } = await supabase
@@ -43,11 +49,13 @@ export default function SalesScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      fetchEntries();
-    }, [])
+      fetchEntries(selectedDate);
+    }, [selectedDate])
   );
 
   const handleDelete = async (entry: Entry) => {
+    if (isPast) return;
+
     if (entry.type === "product_sale" && entry.product_id && entry.qty) {
       const { data: product } = await supabase
         .from("products")
@@ -69,7 +77,17 @@ export default function SalesScreen() {
       .eq("id", entry.id);
 
     if (error) console.error("Error deleting entry:", error);
-    else fetchEntries();
+    else fetchEntries(selectedDate);
+  };
+
+  const goToPrevDay = () => {
+    const prev = subDays(selectedDate, 1);
+    if (prev >= yearStart) setSelectedDate(prev);
+  };
+
+  const goToNextDay = () => {
+    const next = addDays(selectedDate, 1);
+    if (next <= today) setSelectedDate(next);
   };
 
   const sections = SECTION_CONFIG
@@ -102,12 +120,28 @@ export default function SalesScreen() {
 
   return (
     <View className="flex-1 bg-gray-100">
-      {/* Date Header */}
-      <View className="px-4 pt-4 pb-2">
-        <Text className="text-xl font-bold text-gray-800">
-          {format(new Date(), "EEEE, MMMM d, yyyy")}
-        </Text>
-        <Text className="text-base text-gray-400">Today's entries only</Text>
+
+      {/* Date Selector */}
+      <View className="flex-row items-center justify-between bg-white px-4 py-3 shadow">
+        <TouchableOpacity onPress={goToPrevDay} className="p-2">
+          <Text className={`font-bold text-xl ${selectedDate <= yearStart ? "text-gray-300" : "text-green-600"}`}>
+            ‹
+          </Text>
+        </TouchableOpacity>
+
+        <View className="items-center">
+          <Text className="text-lg font-bold text-gray-800">
+            {format(selectedDate, "MMMM d, yyyy")}
+          </Text>
+          {isToday && <Text className="text-sm text-green-500">Today</Text>}
+          {isPast && <Text className="text-sm text-gray-400">Archive — Read Only</Text>}
+        </View>
+
+        <TouchableOpacity onPress={goToNextDay} className="p-2">
+          <Text className={`font-bold text-xl ${isToday ? "text-gray-300" : "text-green-600"}`}>
+            ›
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {loading ? (
@@ -133,20 +167,21 @@ export default function SalesScreen() {
               entry={item}
               sign={section.sign}
               onDelete={() => handleDelete(item)}
+              readOnly={isPast}
             />
           )}
           ListEmptyComponent={
             <View className="gap-3">
               <Text className="text-center text-gray-400 mt-10">
-                No entries yet. Add your first one!
+                {isPast ? "No entries for this day." : "No entries yet. Add your first one!"}
               </Text>
-              <AddButton />
+              {isToday && <AddButton />}
             </View>
           }
           ListFooterComponent={
             entries.length > 0 ? (
               <View>
-                <AddButton />
+                {isToday && <AddButton />}
                 <View className="mt-3 p-4 bg-white rounded-2xl shadow">
                   <View className="flex-row justify-between mb-1">
                     <Text className="text-base text-gray-500">Total Income</Text>
@@ -165,11 +200,11 @@ export default function SalesScreen() {
                     )}
                   </View>
                   <TouchableOpacity
-                    onPress={() => router.push("/modals/receipt")}
-                    className="mt-4 bg-green-600 rounded-xl py-3 items-center"
-                  >
-                    <Text className="text-white font-semibold text-lg">View Receipt</Text>
-                  </TouchableOpacity>
+                      onPress={() => router.push(`/modals/receipt?date=${selectedDate.toISOString()}`)}
+                      className="mt-4 bg-green-600 rounded-xl py-3 items-center"
+                    >
+                      <Text className="text-white font-semibold text-lg">View Receipt</Text>
+                    </TouchableOpacity>
                 </View>
               </View>
             ) : null

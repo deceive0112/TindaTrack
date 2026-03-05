@@ -36,8 +36,8 @@ export default function DashboardScreen() {
     >
       {/* Header */}
       <View className="mb-4">
-        <Text className="text-2xl font-bold text-gray-800">TindaTrack</Text>
-        <Text className="text-xs text-gray-400">
+        <Text className="text-3xl font-bold text-gray-800">TindaTrack</Text>
+        <Text className="text-sm text-gray-400">
           {format(new Date(), "EEEE, MMMM d, yyyy")}
         </Text>
       </View>
@@ -47,7 +47,7 @@ export default function DashboardScreen() {
 
       {/* Quick Stats */}
       <View className="mt-4">
-        <Text className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-2">
+        <Text className="text-base font-bold text-gray-500 uppercase tracking-widest mb-2">
           Summary
         </Text>
         <QuickStats key={`stats-${key}`} />
@@ -55,7 +55,7 @@ export default function DashboardScreen() {
 
       {/* Sales Chart */}
       <View className="mt-4 mb-6">
-        <Text className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-2">
+        <Text className="text-base font-bold text-gray-500 uppercase tracking-widest mb-2">
           Sales Trend
         </Text>
         <SalesChart key={`chart-${key}`} />

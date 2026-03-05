@@ -121,12 +121,12 @@ export default function AddSaleModal() {
 
       {error && (
         <View className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-4">
-          <Text className="text-red-500 text-sm">{error}</Text>
+          <Text className="text-red-500 text-base">{error}</Text>
         </View>
       )}
 
       {/* Entry Type Selector */}
-      <Text className="text-sm text-gray-500 mb-2">Type</Text>
+      <Text className="text-base text-gray-500 mb-2">Type</Text>
       <View className="flex-row gap-2 mb-4">
         {ENTRY_TYPES.map((t) => (
           <TouchableOpacity
@@ -137,9 +137,9 @@ export default function AddSaleModal() {
             }`}
           >
             {type === t.value ? (
-              <Text className="text-xs font-semibold text-white">{t.label}</Text>
+              <Text className="text-sm font-semibold text-white">{t.label}</Text>
             ) : (
-              <Text className="text-xs font-semibold text-gray-600">{t.label}</Text>
+              <Text className="text-sm font-semibold text-gray-600">{t.label}</Text>
             )}
           </TouchableOpacity>
         ))}
@@ -148,11 +148,11 @@ export default function AddSaleModal() {
       {/* Product Sale */}
       {type === "product_sale" && (
         <View className="gap-3">
-          <Text className="text-sm text-gray-500">Select Product</Text>
+          <Text className="text-base text-gray-500">Select Product</Text>
           {fetchingProducts ? (
             <ActivityIndicator color="#16a34a" />
           ) : products.length === 0 ? (
-            <Text className="text-gray-400 text-sm">No products in stock.</Text>
+            <Text className="text-gray-400 text-base">No products in stock.</Text>
           ) : (
             products.map((p) => (
               <TouchableOpacity
@@ -164,7 +164,7 @@ export default function AddSaleModal() {
               >
                 <View>
                   <Text className="text-gray-800 font-semibold">{p.name}</Text>
-                  <Text className="text-xs text-gray-400">Stock: {p.stock}</Text>
+                  <Text className="text-sm text-gray-400">Stock: {p.stock}</Text>
                 </View>
                 <Text className="text-green-600 font-semibold">₱{p.price}</Text>
               </TouchableOpacity>
@@ -173,23 +173,23 @@ export default function AddSaleModal() {
 
           {selectedProduct && (
             <>
-              <Text className="text-sm text-gray-500 mt-2">Quantity</Text>
+              <Text className="text-base text-gray-500 mt-2">Quantity</Text>
               <View className="flex-row items-center gap-4">
                 <TouchableOpacity
                   onPress={() => setQty((q) => Math.max(1, q - 1))}
-                  className="bg-red-100 rounded-full p-3"
+                  className="bg-red-100 rounded-full p-2"
                 >
-                  <Text className="text-red-500 font-bold text-base">−</Text>
+                  <Text className="text-red-500 font-bold text-lg px-2">−</Text>
                 </TouchableOpacity>
                 <Text className="text-xl font-bold text-gray-800">{qty}</Text>
                 <TouchableOpacity
                   onPress={() => setQty((q) => Math.min(selectedProduct.stock, q + 1))}
-                  className="bg-green-100 rounded-full p-3"
+                  className="bg-green-100 rounded-full p-2"
                 >
-                  <Text className="text-green-600 font-bold text-base">+</Text>
+                  <Text className="text-green-600 font-bold text-lg px-2">+</Text>
                 </TouchableOpacity>
               </View>
-              <Text className="text-sm text-green-600 font-semibold">
+              <Text className="text-base text-green-600 font-semibold">
                 Total: ₱{selectedProduct.price * qty}
               </Text>
             </>
@@ -200,14 +200,14 @@ export default function AddSaleModal() {
       {/* Undeclared Sale */}
       {type === "undeclared_sale" && (
         <View className="gap-3">
-          <Text className="text-sm text-gray-500">Name</Text>
+          <Text className="text-base text-gray-500">Name</Text>
           <TextInput
             className="bg-white rounded-xl px-4 py-3 text-gray-800 shadow"
             placeholder="e.g. Sideline job"
             value={name}
             onChangeText={setName}
           />
-          <Text className="text-sm text-gray-500">Amount (₱)</Text>
+          <Text className="text-base text-gray-500">Amount (₱)</Text>
           <TextInput
             className="bg-white rounded-xl px-4 py-3 text-gray-800 shadow"
             placeholder="e.g. 500"
@@ -221,7 +221,7 @@ export default function AddSaleModal() {
       {/* Expense */}
       {type === "expense" && (
         <View className="gap-3">
-          <Text className="text-sm text-gray-500">Category</Text>
+          <Text className="text-base text-gray-500">Category</Text>
           <View className="flex-row gap-2">
             {EXPENSE_CATEGORIES.map((c) => (
               <TouchableOpacity
@@ -232,22 +232,22 @@ export default function AddSaleModal() {
                 }`}
               >
                 {category === c.value ? (
-                  <Text className="text-xs font-semibold text-white">{c.label}</Text>
+                  <Text className="text-sm font-semibold text-white">{c.label}</Text>
                 ) : (
-                  <Text className="text-xs font-semibold text-gray-600">{c.label}</Text>
+                  <Text className="text-sm font-semibold text-gray-600">{c.label}</Text>
                 )}
               </TouchableOpacity>
             ))}
           </View>
 
-          <Text className="text-sm text-gray-500">Name</Text>
+          <Text className="text-base text-gray-500">Name</Text>
           <TextInput
             className="bg-white rounded-xl px-4 py-3 text-gray-800 shadow"
-            placeholder="e.g. Electricity bill"
+            placeholder="e.g. Food/Rent/Minions"
             value={name}
             onChangeText={setName}
           />
-          <Text className="text-sm text-gray-500">Amount (₱)</Text>
+          <Text className="text-base text-gray-500">Amount (₱)</Text>
           <TextInput
             className="bg-white rounded-xl px-4 py-3 text-gray-800 shadow"
             placeholder="e.g. 800"
@@ -266,7 +266,7 @@ export default function AddSaleModal() {
         {loading ? (
           <ActivityIndicator color="white" />
         ) : (
-          <Text className="text-white font-bold text-base">Add Entry</Text>
+          <Text className="text-white font-bold text-lg">Add Entry</Text>
         )}
       </TouchableOpacity>
     </ScrollView>

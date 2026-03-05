@@ -80,11 +80,11 @@ export default function SalesChart() {
   const maxIncome = Math.max(...data.map((d) => d.income), 1);
 
   return (
-    <View className="bg-white rounded-2xl p-4 shadow">
+    <View className="bg-white rounded-2xl p-4 shadow mb-2">
       <View className="flex-row justify-between items-center mb-4">
-        <Text className="text-base font-bold text-gray-800">Daily Sales (7 Days)</Text>
+        <Text className="text-lg font-bold text-gray-800">Daily Sales (7 Days)</Text>
         <TouchableOpacity onPress={() => router.push("/(tabs)/reports")}>
-          <Text className="text-green-600 text-sm font-semibold">View More</Text>
+          <Text className="text-green-600 text-base font-semibold">View More</Text>
         </TouchableOpacity>
       </View>
 

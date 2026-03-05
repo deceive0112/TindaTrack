@@ -39,16 +39,16 @@ export default function AddBillModal() {
 
   return (
     <View className="flex-1 bg-gray-100 px-4 py-6 gap-4">
-      <Text className="text-xl font-bold text-gray-800">Add Monthly Bill</Text>
+      <Text className="text-2xl font-bold text-gray-800">Add Monthly Bill</Text>
 
       {error && (
         <View className="bg-red-50 border border-red-200 rounded-xl px-4 py-3">
-          <Text className="text-red-500 text-sm">{error}</Text>
+          <Text className="text-red-500 text-base">{error}</Text>
         </View>
       )}
 
       <View>
-        <Text className="text-sm text-gray-600 mb-1">Bill Name</Text>
+        <Text className="text-base text-gray-600 mb-1">Bill Name</Text>
         <TextInput
           className="bg-white rounded-xl px-4 py-3 text-gray-800 shadow"
           placeholder="e.g. Electricity"
@@ -58,7 +58,7 @@ export default function AddBillModal() {
       </View>
 
       <View>
-        <Text className="text-sm text-gray-600 mb-1">Amount (₱)</Text>
+        <Text className="text-base text-gray-600 mb-1">Amount (₱)</Text>
         <TextInput
           className="bg-white rounded-xl px-4 py-3 text-gray-800 shadow"
           placeholder="e.g. 800"
@@ -76,7 +76,7 @@ export default function AddBillModal() {
         {loading ? (
           <ActivityIndicator color="white" />
         ) : (
-          <Text className="text-white font-bold text-base">Save Bill</Text>
+          <Text className="text-white font-bold text-lg">Save Bill</Text>
         )}
       </TouchableOpacity>
     </View>

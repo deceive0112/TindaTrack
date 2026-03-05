@@ -45,17 +45,17 @@ export default function AddProductModal() {
 
   return (
     <View className="flex-1 bg-gray-100 px-4 py-6 gap-4">
-      <Text className="text-xl font-bold text-gray-800">Add New Product</Text>
+      <Text className="text-2xl font-bold text-gray-800">Add New Product</Text>
 
       {error && (
         <View className="bg-red-50 border border-red-200 rounded-xl px-4 py-3">
-          <Text className="text-red-500 text-sm">{error}</Text>
+          <Text className="text-red-500 text-base">{error}</Text>
         </View>
       )}
 
       {/* Name */}
       <View>
-        <Text className="text-sm text-gray-600 mb-1">Product Name</Text>
+        <Text className="text-base text-gray-600 mb-1">Product Name</Text>
         <Controller
           control={control}
           name="name"
@@ -69,13 +69,13 @@ export default function AddProductModal() {
           )}
         />
         {errors.name?.message && (
-          <Text className="text-red-500 text-xs mt-1">{errors.name.message}</Text>
+          <Text className="text-red-500 text-sm mt-1">{errors.name.message}</Text>
         )}
       </View>
 
       {/* Price */}
       <View>
-        <Text className="text-sm text-gray-600 mb-1">Price (₱)</Text>
+        <Text className="text-base text-gray-600 mb-1">Price (₱)</Text>
         <Controller
           control={control}
           name="price"
@@ -90,13 +90,13 @@ export default function AddProductModal() {
           )}
         />
         {errors.price?.message && (
-          <Text className="text-red-500 text-xs mt-1">{errors.price.message}</Text>
+          <Text className="text-red-500 text-sm mt-1">{errors.price.message}</Text>
         )}
       </View>
 
       {/* Stock */}
       <View>
-        <Text className="text-sm text-gray-600 mb-1">Initial Stock</Text>
+        <Text className="text-base text-gray-600 mb-1">Initial Stock</Text>
         <Controller
           control={control}
           name="stock"
@@ -111,7 +111,7 @@ export default function AddProductModal() {
           )}
         />
         {errors.stock?.message && (
-          <Text className="text-red-500 text-xs mt-1">{errors.stock.message}</Text>
+          <Text className="text-red-500 text-sm mt-1">{errors.stock.message}</Text>
         )}
       </View>
 
@@ -123,7 +123,7 @@ export default function AddProductModal() {
         {loading ? (
           <ActivityIndicator color="white" />
         ) : (
-          <Text className="text-white font-bold text-base">Save Product</Text>
+          <Text className="text-white font-bold text-lg">Save Product</Text>
         )}
       </TouchableOpacity>
     </View>

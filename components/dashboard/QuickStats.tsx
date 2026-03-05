@@ -57,24 +57,24 @@ export default function QuickStats() {
     <View className="gap-2">
       {stats.map((stat) => (
         <View key={stat.label} className="bg-white rounded-2xl p-4 shadow">
-          <Text className="text-xs text-gray-400 mb-2 font-semibold uppercase tracking-widest">
+          <Text className="text-sm text-gray-400 mb-2 font-semibold uppercase tracking-widest">
             {stat.label}
           </Text>
           <View className="flex-row justify-between">
             <View>
-              <Text className="text-xs text-gray-400">Income</Text>
-              <Text className="text-sm font-bold text-green-600">₱{stat.income}</Text>
+              <Text className="text-sm text-gray-400">Income</Text>
+              <Text className="text-base font-bold text-green-600">₱{stat.income}</Text>
             </View>
             <View>
-              <Text className="text-xs text-gray-400">Expenses</Text>
-              <Text className="text-sm font-bold text-red-500">-₱{stat.expense}</Text>
+              <Text className="text-sm text-gray-400">Expenses</Text>
+              <Text className="text-base font-bold text-red-500">-₱{stat.expense}</Text>
             </View>
             <View>
-              <Text className="text-xs text-gray-400">Net</Text>
+              <Text className="text-sm text-gray-400">Net</Text>
               {stat.net >= 0 ? (
-                <Text className="text-sm font-bold text-green-600">₱{stat.net}</Text>
+                <Text className="text-base font-bold text-green-600">₱{stat.net}</Text>
               ) : (
-                <Text className="text-sm font-bold text-red-500">-₱{Math.abs(stat.net)}</Text>
+                <Text className="text-base font-bold text-red-500">-₱{Math.abs(stat.net)}</Text>
               )}
             </View>
           </View>

@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Entry } from "@/types";
+import { useLocalSearchParams } from "expo-router";
 
 const SECTION_CONFIG = [
   { title: "Product Sales", filter: (e: Entry) => e.type === "product_sale" },
@@ -15,9 +16,10 @@ const SECTION_CONFIG = [
 ];
 
 export default function ReceiptModal() {
+  const { date } = useLocalSearchParams<{ date?: string }>();
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
-  const today = new Date();
+  const today = date ? new Date(date) : new Date();
 
   useEffect(() => {
     fetchEntries();
@@ -192,16 +194,16 @@ export default function ReceiptModal() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-gray-100 px-4 py-6 mb-20">
+    <ScrollView className="flex-1 bg-gray-100 px-4 py-6">
       {/* Header */}
       <Text className="text-2xl font-bold text-green-600 text-center mb-1">TindaTrack</Text>
-      <Text className="text-xs text-gray-400 text-center mb-6">
+      <Text className="text-sm text-gray-400 text-center mb-6">
         {format(today, "EEEE, MMMM d, yyyy • h:mm a")}
       </Text>
 
       {entries.length === 0 ? (
         <View className="bg-white rounded-2xl p-6 shadow items-center">
-          <Text className="text-gray-400 text-sm">No entries for today.</Text>
+          <Text className="text-gray-400 text-base">No entries for today.</Text>
         </View>
       ) : (
         <>
@@ -213,16 +215,16 @@ export default function ReceiptModal() {
 
             return (
               <View key={title} className="bg-white rounded-2xl p-4 shadow mb-3">
-                <Text className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">
+                <Text className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-2">
                   {title}
                 </Text>
                 {items.map((entry) => (
                   <View key={entry.id} className="flex-row justify-between py-2 border-b border-gray-50">
-                    <Text className="text-sm text-gray-700 flex-1">{entry.name}</Text>
+                    <Text className="text-base text-gray-700 flex-1">{entry.name}</Text>
                     {isExpense ? (
-                      <Text className="text-sm font-semibold text-red-500">-₱{entry.amount}</Text>
+                      <Text className="text-base font-semibold text-red-500">-₱{entry.amount}</Text>
                     ) : (
-                      <Text className="text-sm font-semibold text-green-600">₱{entry.amount}</Text>
+                      <Text className="text-base font-semibold text-green-600">₱{entry.amount}</Text>
                     )}
                   </View>
                 ))}
@@ -233,19 +235,19 @@ export default function ReceiptModal() {
           {/* Summary */}
           <View className="bg-white rounded-2xl p-4 shadow mb-4">
             <View className="flex-row justify-between mb-1">
-              <Text className="text-sm text-gray-500">Total Income</Text>
-              <Text className="text-sm font-semibold text-green-600">₱{totalIncome}</Text>
+              <Text className="text-base text-gray-500">Total Income</Text>
+              <Text className="text-base font-semibold text-green-600">₱{totalIncome}</Text>
             </View>
             <View className="flex-row justify-between mb-3">
-              <Text className="text-sm text-gray-500">Total Expenses</Text>
-              <Text className="text-sm font-semibold text-red-500">-₱{totalExpense}</Text>
+              <Text className="text-base text-gray-500">Total Expenses</Text>
+              <Text className="text-base font-semibold text-red-500">-₱{totalExpense}</Text>
             </View>
             <View className="flex-row justify-between border-t border-gray-100 pt-3">
-              <Text className="text-base font-bold text-gray-800">Net Total</Text>
+              <Text className="text-lg font-bold text-gray-800">Net Total</Text>
               {netTotal >= 0 ? (
-                <Text className="text-base font-bold text-green-600">₱{netTotal}</Text>
+                <Text className="text-lg font-bold text-green-600">₱{netTotal}</Text>
               ) : (
-                <Text className="text-base font-bold text-red-500">-₱{Math.abs(netTotal)}</Text>
+                <Text className="text-lg font-bold text-red-500">-₱{Math.abs(netTotal)}</Text>
               )}
             </View>
           </View>
@@ -255,16 +257,16 @@ export default function ReceiptModal() {
       {/* Actions */}
       <TouchableOpacity
         onPress={handlePrint}
-        className="bg-green-600 rounded-xl py-4 items-center mb-3"
+        className="bg-green-600 rounded-xl py-4 items-center mb-3 mt-3"
       >
-        <Text className="text-white font-bold text-base">Print Receipt</Text>
+        <Text className="text-white font-bold text-lg">Print Receipt</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         onPress={handleShare}
         className="bg-white border border-green-600 rounded-xl py-4 items-center mb-6"
       >
-        <Text className="text-green-600 font-bold text-base">Download / Share</Text>
+        <Text className="text-green-600 font-bold text-lg">Download / Share</Text>
       </TouchableOpacity>
     </ScrollView>
   );

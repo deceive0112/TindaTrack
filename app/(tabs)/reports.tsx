@@ -183,18 +183,18 @@ export default function ReportsScreen() {
           onPress={() => setSelectedMonth((m) => subMonths(m, 1))}
           className="p-2"
         >
-          <Text className="text-green-600 font-bold text-lg">‹</Text>
+          <Text className="text-green-600 font-bold text-xl">‹</Text>
         </TouchableOpacity>
 
         <View className="items-center">
-          <Text className="text-base font-bold text-gray-800">
+          <Text className="text-lg font-bold text-gray-800">
             {format(selectedMonth, "MMMM yyyy")}
           </Text>
           {isPastMonth && (
-            <Text className="text-xs text-gray-400">Archive — Read Only</Text>
+            <Text className="text-sm text-gray-400">Archive — Read Only</Text>
           )}
           {isCurrentMonth && (
-            <Text className="text-xs text-green-500">Current Month</Text>
+            <Text className="text-sm text-green-500">Current Month</Text>
           )}
         </View>
 
@@ -205,7 +205,7 @@ export default function ReportsScreen() {
           }}
           className="p-2"
         >
-          <Text className={`font-bold text-lg ${isSameMonth(selectedMonth, new Date()) ? "text-gray-300" : "text-green-600"}`}>
+          <Text className={`font-bold text-xl ${isSameMonth(selectedMonth, new Date()) ? "text-gray-300" : "text-green-600"}`}>
             ›
           </Text>
         </TouchableOpacity>
@@ -220,9 +220,9 @@ export default function ReportsScreen() {
             className={`flex-1 py-2 rounded-xl items-center border ${filter === f ? "bg-green-600 border-green-600" : "bg-white border-gray-200"}`}
           >
             {filter === f ? (
-              <Text className="text-white font-semibold text-sm">{f}</Text>
+              <Text className="text-white font-semibold text-base">{f}</Text>
             ) : (
-              <Text className="text-gray-600 text-sm">{f}</Text>
+              <Text className="text-gray-600 text-base">{f}</Text>
             )}
           </TouchableOpacity>
         ))}
@@ -234,7 +234,7 @@ export default function ReportsScreen() {
         <>
           {/* Chart */}
           <View className="bg-white rounded-2xl p-4 shadow mb-4">
-            <Text className="text-base font-bold text-gray-800 mb-4">
+            <Text className="text-lg font-bold text-gray-800 mb-4">
               {filter} Income — {format(selectedMonth, "MMMM yyyy")}
             </Text>
             <View className="flex-row items-end justify-around" style={{ height: MAX_HEIGHT + 50 }}>
@@ -260,21 +260,21 @@ export default function ReportsScreen() {
 
           {/* Summary */}
           <View className="bg-white rounded-2xl p-4 shadow mb-4">
-            <Text className="text-base font-bold text-gray-800 mb-3">
+            <Text className="text-lg font-bold text-gray-800 mb-3">
               {filter} Summary
             </Text>
             {filter === "Weekly" ? (
               chartData.map((item, i) => (
                 <View key={i} className="flex-row justify-between py-2 border-b border-gray-50">
-                  <Text className={`text-sm ${item.isFuture ? "text-gray-300" : "text-gray-600"}`}>
+                  <Text className={`text-base ${item.isFuture ? "text-gray-300" : "text-gray-600"}`}>
                     {item.fullDate}
                   </Text>
                   {item.isFuture ? (
-                    <Text className="text-sm text-gray-300">—</Text>
+                    <Text className="text-base text-gray-300">—</Text>
                   ) : item.net >= 0 ? (
-                    <Text className="text-sm font-semibold text-green-600">₱{item.net}</Text>
+                    <Text className="text-base font-semibold text-green-600">₱{item.net}</Text>
                   ) : (
-                    <Text className="text-sm font-semibold text-red-500">-₱{Math.abs(item.net)}</Text>
+                    <Text className="text-base font-semibold text-red-500">-₱{Math.abs(item.net)}</Text>
                   )}
                 </View>
               ))
@@ -282,31 +282,31 @@ export default function ReportsScreen() {
               chartData.map((item, i) => (
                 <View key={i} className="flex-row justify-between py-2 border-b border-gray-50">
                   <View>
-                    <Text className={`text-sm ${item.isFuture ? "text-gray-300" : "text-gray-600"}`}>
+                    <Text className={`text-base ${item.isFuture ? "text-gray-300" : "text-gray-600"}`}>
                       {item.label}
                     </Text>
-                    <Text className="text-xs text-gray-300">{item.fullDate}</Text>
+                    <Text className="text-sm text-gray-300">{item.fullDate}</Text>
                   </View>
                   {item.isFuture ? (
-                    <Text className="text-sm text-gray-300">—</Text>
+                    <Text className="text-base text-gray-300">—</Text>
                   ) : item.net >= 0 ? (
-                    <Text className="text-sm font-semibold text-green-600">₱{item.net}</Text>
+                    <Text className="text-base font-semibold text-green-600">₱{item.net}</Text>
                   ) : (
-                    <Text className="text-sm font-semibold text-red-500">-₱{Math.abs(item.net)}</Text>
+                    <Text className="text-base font-semibold text-red-500">-₱{Math.abs(item.net)}</Text>
                   )}
                 </View>
               ))
             )}
             <View className="flex-row justify-between pt-3">
-              <Text className="text-base font-bold text-gray-800">
+              <Text className="text-lg font-bold text-gray-800">
                 {filter} Net Total
               </Text>
               {chartData.reduce((sum, d) => sum + d.net, 0) >= 0 ? (
-                <Text className="text-base font-bold text-green-600">
+                <Text className="text-lg font-bold text-green-600">
                   ₱{chartData.reduce((sum, d) => sum + d.net, 0)}
                 </Text>
               ) : (
-                <Text className="text-base font-bold text-red-500">
+                <Text className="text-lg font-bold text-red-500">
                   -₱{Math.abs(chartData.reduce((sum, d) => sum + d.net, 0))}
                 </Text>
               )}
@@ -314,24 +314,24 @@ export default function ReportsScreen() {
           </View>
 
           {/* Monthly Bills */}
-          <View className="bg-white rounded-2xl p-4 shadow mb-10">
+          <View className="bg-white rounded-2xl p-4 shadow mb-8">
             <View className="flex-row justify-between items-center mb-3">
-              <Text className="text-base font-bold text-gray-800">Monthly Bills</Text>
+              <Text className="text-lg font-bold text-gray-800">Monthly Bills</Text>
               {isCurrentMonth && (
                 <TouchableOpacity
                   onPress={() => router.push("/modals/add-bill")}
                   className="bg-green-600 rounded-xl px-3 py-1"
                 >
-                  <Text className="text-white text-xs font-semibold">+ Add Bill</Text>
+                  <Text className="text-white text-sm font-semibold">+ Add Bill</Text>
                 </TouchableOpacity>
               )}
               {isPastMonth && (
-                <Text className="text-xs text-gray-400">Read Only</Text>
+                <Text className="text-sm text-gray-400">Read Only</Text>
               )}
             </View>
 
             {bills.length === 0 ? (
-              <Text className="text-gray-400 text-sm text-center py-4">
+              <Text className="text-gray-400 text-base text-center py-4">
                 No bills for {format(selectedMonth, "MMMM yyyy")}.
               </Text>
             ) : (
@@ -343,18 +343,18 @@ export default function ReportsScreen() {
                     disabled={isPastMonth}
                   >
                     <View className={`w-5 h-5 rounded-full border-2 items-center justify-center ${bill.is_paid ? "bg-green-500 border-green-500" : "border-gray-300"}`}>
-                      {bill.is_paid && <Text className="text-white text-xs">✓</Text>}
+                      {bill.is_paid && <Text className="text-white text-sm">✓</Text>}
                     </View>
                     <View>
-                      <Text className={`text-sm font-semibold ${bill.is_paid ? "text-gray-400 line-through" : "text-gray-800"}`}>
+                      <Text className={`text-base font-semibold ${bill.is_paid ? "text-gray-400 line-through" : "text-gray-800"}`}>
                         {bill.name}
                       </Text>
-                      <Text className="text-xs text-gray-400">₱{bill.amount}</Text>
+                      <Text className="text-sm text-gray-400">₱{bill.amount}</Text>
                     </View>
                   </TouchableOpacity>
                   {!isPastMonth && (
                     <TouchableOpacity onPress={() => deleteBill(bill.id)}>
-                      <Text className="text-red-400 text-xs">✕</Text>
+                      <Text className="text-red-400 text-sm">✕</Text>
                     </TouchableOpacity>
                   )}
                 </View>
@@ -364,23 +364,23 @@ export default function ReportsScreen() {
             {bills.length > 0 && (
               <View className="mt-3 pt-3 border-t border-gray-100">
                 <View className="flex-row justify-between mb-1">
-                  <Text className="text-xs text-gray-400">Total Bills</Text>
-                  <Text className="text-xs text-red-500 font-semibold">-₱{totalBills}</Text>
+                  <Text className="text-sm text-gray-400">Total Bills</Text>
+                  <Text className="text-sm text-red-500 font-semibold">-₱{totalBills}</Text>
                 </View>
                 <View className="flex-row justify-between mb-1">
-                  <Text className="text-xs text-gray-400">Paid</Text>
-                  <Text className="text-xs text-green-600 font-semibold">₱{totalPaid}</Text>
+                  <Text className="text-sm text-gray-400">Paid</Text>
+                  <Text className="text-sm text-green-600 font-semibold">₱{totalPaid}</Text>
                 </View>
                 <View className="flex-row justify-between mb-3">
-                  <Text className="text-xs text-gray-400">Monthly Net</Text>
-                  <Text className="text-xs text-gray-600 font-semibold">₱{monthlyNet}</Text>
+                  <Text className="text-sm text-gray-400">Monthly Net</Text>
+                  <Text className="text-sm text-gray-600 font-semibold">₱{monthlyNet}</Text>
                 </View>
                 <View className="flex-row justify-between pt-2 border-t border-gray-100">
-                  <Text className="text-base font-bold text-gray-800">Remaining</Text>
+                  <Text className="text-lg font-bold text-gray-800">Remaining</Text>
                   {remaining >= 0 ? (
-                    <Text className="text-base font-bold text-green-600">₱{remaining}</Text>
+                    <Text className="text-lg font-bold text-green-600">₱{remaining}</Text>
                   ) : (
-                    <Text className="text-base font-bold text-red-500">-₱{Math.abs(remaining)}</Text>
+                    <Text className="text-lg font-bold text-red-500">-₱{Math.abs(remaining)}</Text>
                   )}
                 </View>
               </View>

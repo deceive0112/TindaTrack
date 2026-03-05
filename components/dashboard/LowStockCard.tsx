@@ -32,7 +32,7 @@ export default function LowStockCard() {
     <View className="bg-red-50 border border-red-200 rounded-2xl p-4 shadow">
       <View className="flex-row items-center gap-2 mb-3">
         <AlertTriangle size={18} color="#dc2626" />
-        <Text className="text-red-600 font-bold text-base">
+        <Text className="text-red-600 font-bold text-lg">
           Low Stock Warning ({items.length})
         </Text>
       </View>
@@ -41,11 +41,11 @@ export default function LowStockCard() {
           key={item.id}
           className="flex-row justify-between py-2 border-b border-red-100"
         >
-          <Text className="text-red-500 text-sm font-semibold">{item.name}</Text>
+          <Text className="text-red-500 text-base font-semibold">{item.name}</Text>
           {item.stock === 0 ? (
-            <Text className="text-red-600 text-sm font-bold">Out of stock!</Text>
+            <Text className="text-red-600 text-base font-bold">Out of stock!</Text>
           ) : (
-            <Text className="text-red-400 text-sm">Only {item.stock} left</Text>
+            <Text className="text-red-400 text-base">Only {item.stock} left</Text>
           )}
         </View>
       ))}

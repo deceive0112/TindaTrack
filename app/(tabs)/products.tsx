@@ -36,7 +36,7 @@ export default function ProductsScreen() {
       className="mt-3 bg-green-600 rounded-2xl py-4 flex-row items-center justify-center gap-2"
     >
       <Plus size={20} color="white" />
-      <Text className="text-white font-bold text-base">Add Product</Text>
+      <Text className="text-white font-bold text-lg">Add Product</Text>
     </TouchableOpacity>
   );
 
