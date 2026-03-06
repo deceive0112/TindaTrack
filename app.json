@@ -12,8 +12,7 @@
     },
     "plugins": [
       "expo-router",
-      "expo-sharing",
-      "expo-sqlite"
+      "expo-sharing"
     ],
     "orientation": "portrait",
     "icon": "./assets/icon.png",
