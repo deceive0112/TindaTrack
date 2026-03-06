@@ -13,7 +13,8 @@
     "plugins": [
       "expo-router",
       "expo-sharing",
-      "expo-sqlite"
+      "expo-sqlite",
+      "expo-font"
     ],
     "orientation": "portrait",
     "icon": "./assets/icon.png",
