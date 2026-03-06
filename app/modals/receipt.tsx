@@ -26,9 +26,9 @@ export default function ReceiptModal() {
   }, []);
 
   const fetchEntries = async () => {
-    const start = new Date();
+    const start = new Date(today);
     start.setHours(0, 0, 0, 0);
-    const end = new Date();
+    const end = new Date(today);
     end.setHours(23, 59, 59, 999);
 
     const { data, error } = await supabase
