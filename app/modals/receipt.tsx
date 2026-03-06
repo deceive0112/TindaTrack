@@ -194,7 +194,7 @@ export default function ReceiptModal() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-gray-100 px-4 py-6">
+    <ScrollView className="flex-1 bg-gray-100 px-4 py-6 mb-20">
       {/* Header */}
       <Text className="text-2xl font-bold text-green-600 text-center mb-1">TindaTrack</Text>
       <Text className="text-sm text-gray-400 text-center mb-6">
