@@ -37,7 +37,7 @@ export default function QuickStats() {
       const now = new Date();
       const [today, week, month] = await Promise.all([
         fetchNet(startOfDay(now), endOfDay(now)),
-        fetchNet(startOfWeek(now), endOfWeek(now)),
+        fetchNet(startOfWeek(now, { weekStartsOn: 1 }), endOfWeek(now, { weekStartsOn: 1 })),
         fetchNet(startOfMonth(now), endOfMonth(now)),
       ]);
 
