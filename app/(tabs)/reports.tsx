@@ -2,7 +2,7 @@ import { ScrollView, Text, View, TouchableOpacity, ActivityIndicator, RefreshCon
 import { useState, useCallback } from "react";
 import { useFocusEffect, useRouter } from "expo-router";
 import { supabase } from "@/lib/supabase";
-import { format, startOfDay, endOfDay, startOfMonth, endOfMonth, subDays, subMonths, addMonths, isSameMonth } from "date-fns";
+import { format, startOfDay, endOfDay, startOfMonth, endOfMonth, subDays, subMonths, addMonths, isSameMonth, startOfWeek, endOfWeek, addWeeks, isBefore } from "date-fns";
 
 type PeriodData = {
   label: string;
@@ -53,20 +53,10 @@ export default function ReportsScreen() {
     const today = isCurrentMonth ? now : monthEnd;
 
     if (filter === "Weekly") {
-      const pastDays = Array.from({ length: 7 }, (_, i) => subDays(today, 6 - i))
-        .filter((d) => d >= monthStart);
-
-      const allDays = [...pastDays];
-      let next = new Date(today);
-      while (allDays.length < 7 && isCurrentMonth) {
-        next = new Date(next);
-        next.setDate(next.getDate() + 1);
-        if (next <= monthEnd) allDays.push(new Date(next));
-        else break;
-      }
+      const pastDays = Array.from({ length: 7 }, (_, i) => subDays(today, 6 - i));
 
       const results = await Promise.all(
-        allDays.map(async (day) => {
+        pastDays.map(async (day) => {
           const isFuture = isCurrentMonth && day > now;
           if (isFuture) {
             return { label: format(day, "EEE"), fullDate: format(day, "MMM d"), income: 0, expense: 0, net: 0, isFuture: true };
@@ -86,16 +76,34 @@ export default function ReportsScreen() {
       setChartData(results);
 
     } else {
+      // Build actual Mon-Sun calendar weeks that overlap with the month
+      const weeks: { weekStart: Date; weekEnd: Date }[] = [];
+      // Start from first Monday of the month (skip Sunday if month starts on Sunday)
+      let current = startOfWeek(monthStart, { weekStartsOn: 1 });
+      if (isBefore(current, monthStart)) current = addWeeks(current, 1);
+
+      while (isBefore(current, monthEnd)) {
+        const weekStart = current;
+        const weekEnd = endOfWeek(current, { weekStartsOn: 1 });
+
+        // Clamp to month boundaries
+        const clampedStart = weekStart;
+        const clampedEnd = isBefore(weekEnd, monthEnd) ? weekEnd : monthEnd;
+
+        weeks.push({ weekStart: clampedStart, weekEnd: clampedEnd });
+        current = addWeeks(current, 1);
+      }
+
       const results = await Promise.all(
-        Array.from({ length: 4 }, async (_, weekIndex) => {
-          const weekStartDay = weekIndex * 7 + 1;
-          const weekEndDay = Math.min((weekIndex + 1) * 7, monthEnd.getDate());
-          const weekStart = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), weekStartDay);
-          const weekEnd = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), weekEndDay);
+        weeks.map(async ({ weekStart, weekEnd }, i) => {
           const isFuture = isCurrentMonth && weekStart > now;
 
           if (isFuture) {
-            return { label: `Week ${weekIndex + 1}`, fullDate: `${format(weekStart, "MMM d")} - ${format(weekEnd, "MMM d")}`, income: 0, expense: 0, net: 0, isFuture: true };
+            return {
+              label: `Week ${i + 1}`,
+              fullDate: `${format(weekStart, "MMM d")} - ${format(weekEnd, "MMM d")}`,
+              income: 0, expense: 0, net: 0, isFuture: true,
+            };
           }
 
           const { data } = await supabase
@@ -106,7 +114,11 @@ export default function ReportsScreen() {
 
           const income = (data ?? []).filter((e) => e.type !== "expense").reduce((sum, e) => sum + e.amount, 0);
           const expense = (data ?? []).filter((e) => e.type === "expense").reduce((sum, e) => sum + e.amount, 0);
-          return { label: `Week ${weekIndex + 1}`, fullDate: `${format(weekStart, "MMM d")} - ${format(weekEnd, "MMM d")}`, income, expense, net: income - expense, isFuture: false };
+          return {
+            label: `Week ${i + 1}`,
+            fullDate: `${format(weekStart, "MMM d")} - ${format(weekEnd, "MMM d")}`,
+            income, expense, net: income - expense, isFuture: false,
+          };
         })
       );
       setChartData(results);
@@ -138,7 +150,7 @@ export default function ReportsScreen() {
   };
 
   const togglePaid = async (bill: Bill) => {
-    if (isPastMonth) return; // read only for past months
+    if (isPastMonth) return;
     const { error } = await supabase
       .from("bills")
       .update({ is_paid: !bill.is_paid })
@@ -147,7 +159,7 @@ export default function ReportsScreen() {
   };
 
   const deleteBill = async (id: string) => {
-    if (isPastMonth) return; // read only for past months
+    if (isPastMonth) return;
     const { error } = await supabase.from("bills").delete().eq("id", id);
     if (!error) fetchBills();
   };
@@ -166,8 +178,8 @@ export default function ReportsScreen() {
 
   const maxIncome = Math.max(...chartData.map((d) => d.income), 1);
   const totalBills = bills.reduce((sum, b) => sum + b.amount, 0);
-  const remaining = monthlyNet - totalBills;
   const totalPaid = bills.filter((b) => b.is_paid).reduce((sum, b) => sum + b.amount, 0);
+  const remaining = monthlyNet - totalPaid;
 
   return (
     <ScrollView
